@@ -4,11 +4,13 @@
 
 name: Deploy to Production
 
+# NOTE: Auto-deploy disabled — currently deploying via Vercel.
+# Uncomment the push triggers below when switching to Docker/VPS deployment.
 on:
-  push:
-    branches: [main]
-    tags:
-      - 'v*.*.*'
+  # push:
+  #   branches: [main]
+  #   tags:
+  #     - 'v*.*.*'
   workflow_dispatch:
 
 concurrency:

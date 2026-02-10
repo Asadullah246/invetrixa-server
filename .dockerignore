@@ -1,0 +1,75 @@
+# Dependencies
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store
+
+# Build outputs
+dist
+build
+.next
+out
+*.tsbuildinfo
+
+# Prisma generated files (will be generated in Docker)
+generated
+.prisma
+
+# Environment files (use env_file in docker-compose)
+.env
+.env.local
+.env.*.local
+.env.test
+.env.production
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Testing
+coverage
+.nyc_output
+*.lcov
+
+# Temp files
+temp
+tmp
+*.tmp
+.cache
+
+# Documentation
+*.md
+!README.md
+docs
+
+# CI/CD
+.github
+.gitlab-ci.yml
+.travis.yml
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# OS
+.DS_Store
+Thumbs.db
+

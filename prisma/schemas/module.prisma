@@ -1,0 +1,14 @@
+model ModuleRef {
+  id          String   @id @default(uuid())
+  name        String   @unique // e.g., "Products", "Stock Management"
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  actions         String[]
+  packageFeatures PackageFeature[]
+  rolePermissions RolePermission[]
+
+  @@index([name])
+  @@map("modules")
+}

@@ -1,0 +1,280 @@
+enum VerificationTokenType {
+  EMAIL_VERIFICATION
+  PASSWORD_RESET
+}
+
+enum OnboardingStatus {
+  PENDING
+  COMPLETED
+}
+
+enum TwoFactorType {
+  TOTP
+  SMS
+  EMAIL
+}
+
+enum TrustedDeviceStatus {
+  ACTIVE
+  REVOKED
+}
+
+enum MfaChallengeChannel {
+  SMS
+  EMAIL
+}
+
+enum BusinessType {
+  RETAIL
+  ECOMMERCE
+  WHOLESALE
+  DISTRIBUTION
+  MANUFACTURING
+  SERVICES
+  PROFESSIONAL_SERVICES
+  IT_SERVICES
+  HOSPITALITY
+  FOOD
+  HEALTHCARE
+  FITNESS
+  EDUCATION
+  CONSTRUCTION
+  REAL_ESTATE
+  FINANCE
+  LOGISTICS
+  TRANSPORT
+  AGRICULTURE
+  NON_PROFIT
+  MEDIA
+  ENTERTAINMENT
+  GOVERNMENT
+  OTHER
+}
+
+enum Theme {
+  LIGHT
+  DARK
+}
+
+model User {
+  // identity
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Personal Info
+  firstName    String         @db.VarChar(50)
+  lastName     String         @db.VarChar(50)
+  profilePhoto String?        @db.VarChar(255)
+  businessType BusinessType[]
+
+  // Contact
+  email       String  @unique @db.VarChar(255)
+  phoneNumber String? @db.VarChar(20)
+
+  // Authentication
+  password String @db.VarChar(255)
+
+  // Verification
+  emailVerified DateTime?
+
+  // Account status
+  isActive              Boolean          @default(true)
+  onboardingStatus      OnboardingStatus @default(PENDING)
+  onboardingCompletedAt DateTime?
+  onboardingState       OnboardingState?
+  deletedAt             DateTime?
+
+  // Activity tracking
+  lastLoginAt       DateTime?
+  lastLoginIp       String?   @db.VarChar(45)
+  lastActiveAt      DateTime?
+  passwordChangedAt DateTime?
+
+  // Security controls
+  failedLoginAttempts         Int                   @default(0)
+  lockedUntil                 DateTime?
+  sessionVersion              Int                   @default(0)
+  rememberMeToken             String?               @db.VarChar(255)
+  twoFactorEnabled            Boolean               @default(false)
+  twoFactorType               TwoFactorType?
+  twoFactorSecret             String?               @db.VarChar(255)
+  twoFactorTempSecret         String?               @db.VarChar(255)
+  twoFactorEnforced           Boolean               @default(false)
+  twoFactorEnforcedAt         DateTime?
+  twoFactorVerifiedAt         DateTime?
+  twoFactorBackupCodesVersion Int                   @default(0)
+  trustedDevices              TrustedDevice[]
+  twoFactorBackupCodes        TwoFactorBackupCode[]
+  mfaChallenges               TwoFactorChallenge[]
+
+  // Relations
+  preferences        UserPreferences?
+  passwordHistory    PasswordHistory[]
+  verificationTokens VerificationToken[]
+  tenants            Tenant[]            @relation(name: "tenants_user")
+  address            Address?
+
+  // Role assignments per location
+  userAssignments           UserAssignment[]   @relation("UserAssignments")
+  assignmentsMade           UserAssignment[]   @relation("AssignmentsMade") // Roles this user assigned to others
+  tenantInvitationsSent     TenantInvitation[] @relation("UserSentTenantInvitations")
+  tenantInvitationsReceived TenantInvitation[] @relation("UserReceivedTenantInvitations")
+  subscriptions             Subscription[]
+
+  // Member removals
+  removals    TenantMemberRemoval[] @relation("UserRemovals")
+  removedByMe TenantMemberRemoval[] @relation("RemovedByUser")
+
+  // Stock management - created by this user
+  stockMovementsCreated    StockMovement[]    @relation("StockMovementCreator")
+  stockTransfersCreated    StockTransfer[]    @relation("TransferCreator")
+  stockReservationsCreated StockReservation[] @relation("ReservationCreator")
+  locations                Location[]         @relation("location_created_by_user")
+  customersCreated         Customer[]         @relation("CustomerCreator")
+
+  // POS relations
+  terminalsCreated  POSTerminal[] @relation("TerminalCreator")
+  sessionsOpened    POSSession[]  @relation("SessionOpener")
+  sessionsClosed    POSSession[]  @relation("SessionCloser")
+  salesProcessed    Sale[]        @relation("SaleCashier")
+  salesVoided       Sale[]        @relation("SaleVoider")
+  paymentsProcessed SalePayment[] @relation("PaymentProcessor")
+  refundsProcessed  SaleRefund[]  @relation("RefundProcessor")
+
+  // Invoice relations
+  invoicesCreated          Invoice[]        @relation("InvoiceCreator")
+  invoicePaymentsProcessed InvoicePayment[] @relation("InvoicePaymentProcessor")
+
+  // Indexes
+  @@index([email])
+  @@index([phoneNumber])
+  @@index([isActive])
+  @@index([lockedUntil])
+  @@index([email, isActive])
+  @@index([twoFactorEnabled])
+  @@index([twoFactorType])
+  @@index([onboardingStatus])
+  @@map("users")
+}
+
+model OnboardingState {
+  id              String  @id @default(uuid())
+  profileComplete Boolean @default(false)
+  tenantCreation  Boolean @default(false)
+  tenantSetting   Boolean @default(false)
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model PasswordHistory {
+  id        String   @id @default(uuid())
+  userId    String
+  password  String   @db.VarChar(255)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, createdAt])
+  @@map("password_histories")
+}
+
+model VerificationToken {
+  id        String                @id @default(uuid())
+  userId    String
+  token     String                @unique @db.VarChar(255)
+  type      VerificationTokenType
+  expiresAt DateTime
+  used      Boolean               @default(false)
+  usedAt    DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([token])
+  @@index([userId])
+  @@index([type])
+  @@index([userId, type])
+  @@map("verification_tokens")
+}
+
+model TwoFactorBackupCode {
+  id        String    @id @default(uuid())
+  userId    String
+  codeHash  String    @db.VarChar(255)
+  used      Boolean   @default(false)
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, used])
+  @@map("two_factor_backup_codes")
+}
+
+model TrustedDevice {
+  id         String              @id @default(uuid())
+  userId     String
+  deviceId   String              @unique @db.VarChar(255)
+  label      String?             @db.VarChar(100)
+  userAgent  String?             @db.VarChar(255)
+  ipAddress  String?             @db.VarChar(45)
+  status     TrustedDeviceStatus @default(ACTIVE)
+  createdAt  DateTime            @default(now())
+  lastUsedAt DateTime?
+  expiresAt  DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+  @@index([userId, deviceId])
+  @@map("trusted_devices")
+}
+
+model TwoFactorChallenge {
+  id         String              @id @default(uuid())
+  userId     String
+  channel    MfaChallengeChannel
+  codeHash   String              @db.VarChar(255)
+  expiresAt  DateTime
+  attempts   Int                 @default(0)
+  consumed   Boolean             @default(false)
+  consumedAt DateTime?
+  metadata   Json?
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, channel, consumed])
+  @@map("two_factor_challenges")
+}
+
+model UserPreferences {
+  id       String @id @default(uuid())
+  userId   String @unique
+  timezone String @default("UTC") @db.VarChar(50)
+  language String @default("en") @db.VarChar(10)
+  theme    Theme  @default(LIGHT)
+  settings Json?
+
+  // Notification Preferences
+  emailNotifications Boolean @default(true)
+  smsNotifications   Boolean @default(false)
+  pushNotifications  Boolean @default(true)
+  weeklyReportEmails Boolean @default(true)
+  pxlhutEmails       Boolean @default(true)
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("user_preferences")
+}

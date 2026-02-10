@@ -1,0 +1,163 @@
+// ============== INVOICE/QUOTE ENUMS ==============
+
+enum DocumentType {
+  QUOTE // Price estimate, not binding
+  PROFORMA // Proforma invoice (before goods shipped)
+  INVOICE // Formal invoice for payment
+}
+
+enum DocumentStatus {
+  DRAFT // Being prepared
+  SENT // Sent to customer
+  ACCEPTED // Quote approved by customer
+  REJECTED // Quote rejected
+  EXPIRED // Quote validity expired
+  PAID // Invoice fully paid
+  PARTIALLY_PAID // Invoice partially paid
+  OVERDUE // Past due date, unpaid
+  CANCELLED // Cancelled by seller
+}
+
+// ============== INVOICE/QUOTE MODEL ==============
+
+model Invoice {
+  id             String @id @default(uuid())
+  documentNumber String @db.VarChar(50) // QUO-2026-00001 or INV-2026-00001
+
+  documentType DocumentType
+  status       DocumentStatus @default(DRAFT)
+
+  // Subject/Title
+  subject String? @db.VarChar(255) // "Office Supplies Order", "Construction Materials"
+
+  // Monetary Values
+  subtotal       Decimal @db.Decimal(15, 4)
+  discountAmount Decimal @default(0) @db.Decimal(15, 4)
+  taxAmount      Decimal @default(0) @db.Decimal(15, 4)
+  totalAmount    Decimal @db.Decimal(15, 4)
+  paidAmount     Decimal @default(0) @db.Decimal(15, 4)
+  dueAmount      Decimal @db.Decimal(15, 4) // totalAmount - paidAmount
+
+  // Date Fields
+  issueDate  DateTime  @default(now())
+  dueDate    DateTime? // For invoices - when payment is due
+  validUntil DateTime? // For quotes - quote expiry
+
+  // Payment Terms
+  paymentTerms String? @db.VarChar(100) // "Net 30", "50% Advance, 50% on Delivery"
+
+  // Conversion Tracking
+  sourceDocumentId  String? // If this invoice was created from a quote
+  sourceDocument    Invoice?  @relation("DocumentConversion", fields: [sourceDocumentId], references: [id], onDelete: SetNull)
+  convertedDocument Invoice[] @relation("DocumentConversion")
+
+  // Link to Sale (when invoice is fully paid and converted to sale)
+  convertedToSaleId String? @unique
+  convertedToSale   Sale?   @relation(fields: [convertedToSaleId], references: [id], onDelete: SetNull)
+
+  // Customer (required for quotes/invoices)
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  // Location (which warehouse/store)
+  locationId String
+  location   Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  // Tenant relation
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  // Audit
+  createdById String?
+  createdBy   User?   @relation("InvoiceCreator", fields: [createdById], references: [id], onDelete: SetNull)
+
+  // Notes
+  notes           String? // Internal notes
+  customerNotes   String? // Notes visible to customer
+  termsConditions String? @db.Text // Terms & conditions text
+
+  // Timestamps
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  sentAt      DateTime? // When sent to customer
+  acceptedAt  DateTime? // When quote was accepted
+  paidAt      DateTime? // When fully paid
+  cancelledAt DateTime?
+
+  // Relations
+  items    InvoiceItem[]
+  payments InvoicePayment[]
+
+  @@unique([documentNumber, tenantId])
+  @@index([tenantId])
+  @@index([customerId])
+  @@index([locationId])
+  @@index([documentType])
+  @@index([status])
+  @@index([issueDate])
+  @@index([dueDate])
+  @@map("invoices")
+}
+
+// ============== INVOICE ITEM MODEL ==============
+
+model InvoiceItem {
+  id String @id @default(uuid())
+
+  // Product reference
+  productId   String
+  product     Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productName String  @db.VarChar(255) // Denormalized for history
+  productSku  String  @db.VarChar(50) // Denormalized for history
+
+  // Quantity and pricing
+  quantity       Int
+  unitPrice      Decimal @db.Decimal(15, 4)
+  discountAmount Decimal @default(0) @db.Decimal(15, 4)
+  taxAmount      Decimal @default(0) @db.Decimal(15, 4)
+  lineTotal      Decimal @db.Decimal(15, 4) // (quantity * unitPrice) - discount + tax
+
+  // Notes
+  notes String?
+
+  // Sort order
+  sortOrder Int @default(0)
+
+  // Invoice relation
+  invoiceId String
+  invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+  @@index([productId])
+  @@map("invoice_items")
+}
+
+// ============== INVOICE PAYMENT MODEL ==============
+
+model InvoicePayment {
+  id String @id @default(uuid())
+
+  // Payment details
+  amount         Decimal       @db.Decimal(15, 4)
+  paymentMethod  PaymentMethod
+  transactionRef String?       @db.VarChar(100) // External reference
+  paymentDate    DateTime      @default(now())
+
+  // Notes
+  notes String?
+
+  // Invoice relation
+  invoiceId String
+  invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  // Processed by
+  processedById String?
+  processedBy   User?   @relation("InvoicePaymentProcessor", fields: [processedById], references: [id], onDelete: SetNull)
+
+  // Timestamps
+  createdAt DateTime @default(now())
+
+  @@index([invoiceId])
+  @@index([paymentDate])
+  @@map("invoice_payments")
+}

@@ -1,0 +1,62 @@
+enum AccessScope {
+  TENANT // Access to entire tenant
+  LOCATION // Access to specific location only
+}
+
+model Role {
+  id          String   @id @default(uuid())
+  name        String   @db.VarChar(50) // e.g., Manager, Cashier
+  description String?  @db.VarChar(255)
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+  createdAt   DateTime @default(now())
+
+  // What this role can do
+  rolePermissions RolePermission[]
+
+  // Link to users per location
+  userAssignments UserAssignment[]
+
+  // Invitations with this role
+  tenantInvitations TenantInvitation[]
+
+  @@unique([name, tenantId], name: "name_tenantId")
+}
+
+model RolePermission {
+  id String @id @default(uuid())
+
+  roleId String
+  role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  moduleRefId String
+  moduleRef   ModuleRef @relation(fields: [moduleRefId], references: [id], onDelete: Cascade)
+
+  actions String[] // ["products.create", "stock.adjust"]
+
+  @@unique([roleId, moduleRefId], name: "roleId_moduleRefId")
+  @@index([roleId, moduleRefId])
+}
+
+// ASSIGN USER TO ROLE + LOCATION
+model UserAssignment {
+  id          String      @id @default(uuid())
+  userId      String
+  roleId      String
+  tenantId    String
+  accessScope AccessScope @default(TENANT) // Determines if access is tenant-wide or location-specific
+  locationId  String? // Required when accessScope is LOCATION, null when TENANT
+
+  assignedAt   DateTime @default(now())
+  assignedById String? // Who assigned this role
+
+  // Relations
+  user       User      @relation("UserAssignments", fields: [userId], references: [id], onDelete: Cascade)
+  role       Role      @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  tenant     Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  location   Location? @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  assignedBy User?     @relation("AssignmentsMade", fields: [assignedById], references: [id], onDelete: SetNull)
+
+  @@unique([userId, roleId, tenantId, locationId], name: "userId_roleId_tenantId_locationId")
+  @@index([assignedById])
+}

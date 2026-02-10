@@ -1,0 +1,198 @@
+enum TenantStatus {
+  PENDING
+  ACTIVE
+  INACTIVE
+}
+
+enum PricingMethod {
+  LIFO
+  FIFO
+  MOVING_AVERAGE
+}
+
+enum TenantInvitationStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  EXPIRED
+  CANCELLED
+}
+
+enum CompanyType {
+  SOLE_PROPRIETORSHIP
+  PARTNERSHIP
+  LIMITED_LIABILITY_COMPANY
+  PRIVATE_LIMITED
+  PUBLIC_LIMITED
+  NON_PROFIT
+  GOVERNMENT
+  OTHER
+}
+
+enum Industry {
+  RETAIL
+  ECOMMERCE
+  MANUFACTURING
+  WHOLESALE
+  FOOD_AND_BEVERAGE
+  RESTAURANT
+  HEALTHCARE
+  EDUCATION
+  TECHNOLOGY
+  LOGISTICS
+  FINANCE
+  REAL_ESTATE
+  AUTOMOTIVE
+  PHARMACEUTICAL
+  HOSPITALITY
+  CONSTRUCTION
+  AGRICULTURE
+  TEXTILE
+  BEAUTY_AND_PERSONAL_CARE
+  ELECTRONICS
+  SERVICE
+  OTHER
+}
+
+model Tenant {
+  id                 String      @id @default(uuid())
+  name               String      @db.VarChar(200)
+  companyType        CompanyType
+  industry           Industry
+  registrationNumber String?     @db.VarChar(100)
+  businessEmail      String      @db.VarChar(255)
+  businessPhone      String      @db.VarChar(50)
+  website            String?     @db.VarChar(255)
+  description        String?
+  establishedYear    String      @db.VarChar(4)
+  logo               String?
+  deletedAt          DateTime?
+
+  status               TenantStatus  @default(PENDING)
+  defaultPricingMethod PricingMethod @default(FIFO) // Default for all products
+
+  // Relations
+  roles             Role[]
+  users             User[]                @relation(name: "tenants_user")
+  address           Address?
+  tenantInvitations TenantInvitation[]
+  memberRemovals    TenantMemberRemoval[]
+
+  // Product-related relations
+  products          Product[]
+  productCategories ProductCategory[]
+  // attributes        Attribute[]
+  suppliers         Supplier[]
+  locations         Location[]
+
+  // Stock management relations
+  inventoryBalances InventoryBalance[]
+  valuationLayers   ValuationLayer[]
+  stockMovements    StockMovement[]
+  stockTransfers    StockTransfer[]
+  stockReservations StockReservation[]
+  batches           Batch[]
+  customers         Customer[]
+
+  // POS relations
+  posTerminals        POSTerminal[]
+  posSessions         POSSession[]
+  sales               Sale[]
+  saleRefunds         SaleRefund[]
+  dailySalesSummaries DailySalesSummary[]
+  invoices            Invoice[]
+
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  tenantSettings  TenantSettings?
+  isAdministrator Boolean          @default(false)
+  userAssignments UserAssignment[]
+  tenantUnitTypes TenantUnitTypes?
+
+  @@unique([name, isAdministrator], name: "name_isAdministrator")
+  @@index([name])
+  @@index([status])
+  @@index([deletedAt])
+  @@map("tenants")
+}
+
+model TenantSettings {
+  id                   String        @id @default(uuid())
+  defaultPricingMethod PricingMethod @default(MOVING_AVERAGE)
+  timezone             String        @default("UTC") @db.VarChar(50)
+  locale               String        @default("en-US") @db.VarChar(10)
+  currency             String        @default("USD") @db.VarChar(10)
+  dateFormat           String        @default("MM/DD/YYYY") @db.VarChar(20)
+  timeFormat           String        @default("hh:mm A") @db.VarChar(20)
+  decimalSeparator     String        @default(".") @db.VarChar(1)
+  thousandsSeparator   String        @default(",") @db.VarChar(1)
+
+  tenantId String? @unique
+  tenant   Tenant? @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@map("company_settings")
+}
+
+model TenantInvitation {
+  id          String                 @id @default(uuid())
+  email       String                 @db.VarChar(255)
+  status      TenantInvitationStatus @default(PENDING)
+  tokenHash   String                 @unique @db.VarChar(128)
+  expiresAt   DateTime?
+  acceptedAt  DateTime?
+  declinedAt  DateTime?
+  cancelledAt DateTime?
+  message     String?                @db.VarChar(500)
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
+
+  tenantId      String
+  invitedById   String
+  invitedUserId String?
+  roleId        String? // Optional role to assign on acceptance
+
+  tenant      Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  invitedBy   User   @relation("UserSentTenantInvitations", fields: [invitedById], references: [id], onDelete: Cascade)
+  invitedUser User?  @relation("UserReceivedTenantInvitations", fields: [invitedUserId], references: [id], onDelete: Cascade)
+  role        Role?  @relation(fields: [roleId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([email])
+  @@index([invitedUserId])
+  @@index([expiresAt])
+  @@index([status])
+  @@index([tenantId, status])
+  @@map("tenant_invitations")
+}
+
+model TenantMemberRemoval {
+  id        String   @id @default(uuid())
+  reason    String?  @db.VarChar(500)
+  createdAt DateTime @default(now())
+
+  userId      String
+  tenantId    String
+  removedById String
+
+  user          User   @relation("UserRemovals", fields: [userId], references: [id], onDelete: Cascade)
+  tenant        Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  removedByUser User   @relation("RemovedByUser", fields: [removedById], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tenantId])
+  @@index([removedById])
+  @@map("tenant_member_removals")
+}
+
+// Stores available unit types as an array per tenant
+
+model TenantUnitTypes {
+  id     String   @id @default(uuid())
+  values String[] // ["PIECE", "KG", "BOX", "LITER", etc.]
+
+  tenantId String? @unique
+  tenant   Tenant? @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("tenant_unit_types")
+}

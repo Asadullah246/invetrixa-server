@@ -1,0 +1,51 @@
+
+
+# Development Dockerfile for NestJS + Prisma
+FROM node:20-alpine AS base
+
+# System dependencies (Prisma + Node native deps)
+RUN apk add --no-cache \
+  libc6-compat \
+  openssl \
+  curl \
+  git
+
+# Enable pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# App directory
+# App directory
+WORKDIR /app
+
+# Ensure app directory is owned by node (for subsequent operations)
+RUN chown node:node /app
+
+# Switch to node user specificially for install to ensure correct ownership
+USER node
+
+# Copy only dependency-related files first (better cache)
+# Use --chown so the "node" user can read/write them
+COPY --chown=node:node package.json pnpm-lock.yaml prisma.config.ts ./
+
+# Copy prisma schema (needed for generate)
+COPY --chown=node:node prisma ./prisma
+
+# Install dependencies
+RUN --mount=type=cache,id=pnpm,target=/home/node/.local/share/pnpm/store \
+  pnpm install --frozen-lockfile
+
+# Generate Prisma Client
+# (DB not needed here, dummy URL is fine)
+RUN DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy" \
+  pnpm exec prisma generate
+
+# Copy rest of the source code
+# Note: In dev, we bind-mount src anyway, so strict ownership of static copy is less critical
+# and skipping --chown here improves build speed for large projects.
+COPY . .
+
+# Expose app port
+EXPOSE 8080
+
+# Dev command (NO db push, NO migrate here)
+CMD ["pnpm", "run", "start:dev"]

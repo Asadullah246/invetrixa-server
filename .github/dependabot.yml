@@ -1,0 +1,100 @@
+# =================================================================
+# Dependabot Configuration - Automated dependency updates
+# =================================================================
+
+version: 2
+updates:
+  # ─────────────────────────────────────────────────────────────────
+  # npm/pnpm dependencies
+  # ─────────────────────────────────────────────────────────────────
+  - package-ecosystem: 'npm'
+    directory: '/'
+    target-branch: 'develop'
+    schedule:
+      interval: 'weekly'
+      day: 'monday'
+      time: '09:00'
+      timezone: 'Asia/Dhaka'
+    open-pull-requests-limit: 10
+    labels:
+      - 'dependencies'
+      - 'automated'
+    commit-message:
+      prefix: 'deps'
+      include: 'scope'
+    groups:
+      # Group NestJS updates together
+      nestjs:
+        patterns:
+          - '@nestjs/*'
+        update-types:
+          - 'minor'
+          - 'patch'
+      # Group Prisma updates together
+      prisma:
+        patterns:
+          - 'prisma'
+          - '@prisma/*'
+      # Group testing dependencies
+      testing:
+        patterns:
+          - 'jest'
+          - '@types/jest'
+          - 'ts-jest'
+          - 'supertest'
+          - '@types/supertest'
+      # Group TypeScript/ESLint tooling
+      tooling:
+        patterns:
+          - 'typescript'
+          - 'eslint*'
+          - '@typescript-eslint/*'
+          - 'prettier'
+    ignore:
+      # Ignore major version updates (review manually)
+      - dependency-name: '*'
+        update-types: ['version-update:semver-major']
+
+  # ─────────────────────────────────────────────────────────────────
+  # GitHub Actions
+  # ─────────────────────────────────────────────────────────────────
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    target-branch: 'develop'
+    schedule:
+      interval: 'weekly'
+      day: 'monday'
+      time: '09:00'
+      timezone: 'Asia/Dhaka'
+    open-pull-requests-limit: 5
+    labels:
+      - 'dependencies'
+      - 'github-actions'
+      - 'automated'
+    commit-message:
+      prefix: 'ci'
+      include: 'scope'
+    ignore:
+      - dependency-name: '*'
+        update-types: ['version-update:semver-major']
+
+  # ─────────────────────────────────────────────────────────────────
+  # Docker base images
+  # ─────────────────────────────────────────────────────────────────
+  - package-ecosystem: 'docker'
+    directory: '/'
+    target-branch: 'develop'
+    schedule:
+      interval: 'weekly'
+      day: 'monday'
+      time: '09:00'
+      timezone: 'Asia/Dhaka'
+    labels:
+      - 'dependencies'
+      - 'docker'
+      - 'automated'
+    commit-message:
+      prefix: 'docker'
+    ignore:
+      - dependency-name: '*'
+        update-types: ['version-update:semver-major']

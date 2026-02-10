@@ -1,0 +1,125 @@
+# =================================================================
+# CD Staging Workflow - Deploy to staging on develop branch
+# =================================================================
+
+name: Deploy to Staging
+
+on:
+  push:
+    branches: [develop]
+  workflow_dispatch:
+
+concurrency:
+  group: staging-deploy
+  cancel-in-progress: false
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-and-push:
+    name: Build and Push Docker Image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    outputs:
+      image_tag: ${{ steps.meta.outputs.tags }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix=staging-
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    environment:
+      name: staging
+      url: ${{ vars.STAGING_URL }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # ─────────────────────────────────────────────────────────────
+      # OPTION 1: Deploy to Railway
+      # Uncomment this section if using Railway
+      # ─────────────────────────────────────────────────────────────
+      # - name: Install Railway CLI
+      #   run: npm install -g @railway/cli
+
+      # - name: Deploy to Railway
+      #   run: railway up --service pxlhut-server-staging
+      #   env:
+      #     RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
+      # ─────────────────────────────────────────────────────────────
+      # OPTION 2: Deploy to Render
+      # Uncomment this section if using Render
+      # ─────────────────────────────────────────────────────────────
+      # - name: Deploy to Render
+      #   run: |
+      #     curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK_STAGING }}"
+
+      # ─────────────────────────────────────────────────────────────
+      # OPTION 3: Deploy to VPS via SSH
+      # Uncomment this section if using VPS
+      # ─────────────────────────────────────────────────────────────
+      # - name: Deploy to VPS
+      #   uses: appleboy/ssh-action@v1.0.3
+      #   with:
+      #     host: ${{ secrets.STAGING_HOST }}
+      #     username: ${{ secrets.STAGING_USER }}
+      #     key: ${{ secrets.STAGING_SSH_KEY }}
+      #     script: |
+      #       cd /opt/pxlhut-server
+      #       docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:develop
+      #       docker compose -f docker-compose.staging.yml up -d
+      #       docker image prune -f
+
+      - name: Deployment placeholder
+        run: |
+          echo "🚀 Docker image built and pushed to registry"
+          echo "📝 Configure deployment by uncommenting one of the options above"
+          echo "   - Railway: Add RAILWAY_TOKEN secret"
+          echo "   - Render: Add RENDER_DEPLOY_HOOK_STAGING secret"
+          echo "   - VPS: Add STAGING_HOST, STAGING_USER, STAGING_SSH_KEY secrets"
+
+      - name: Run database migrations
+        if: false # Enable after configuring deployment
+        run: |
+          echo "Running migrations on staging..."
+          # pnpm exec prisma migrate deploy

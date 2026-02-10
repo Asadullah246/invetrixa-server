@@ -1,0 +1,352 @@
+// ============== POS ENUMS ==============
+
+enum SaleStatus {
+  DRAFT // Cart in progress
+  PENDING // Awaiting payment
+  COMPLETED // Fully paid
+  PARTIALLY_PAID // Partial payment received
+  VOIDED // Cancelled/voided
+  REFUNDED // Fully refunded
+  PARTIALLY_REFUNDED
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  BKASH
+  NAGAD
+  ROCKET
+  MOBILE_WALLET // Other mobile wallets
+  BANK_TRANSFER
+  STORE_CREDIT
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED_AMOUNT
+}
+
+enum POSSessionStatus {
+  OPEN
+  CLOSED
+  RECONCILING
+}
+
+// ============== POS MODELS ==============
+
+// POS Terminal/Register Configuration
+model POSTerminal {
+  id       String  @id @default(uuid())
+  name     String  @db.VarChar(100) // "Register 1", "Checkout A"
+  code     String  @db.VarChar(20) // "POS-001"
+  isActive Boolean @default(true)
+
+  // Location binding
+  locationId String
+  location   Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  // Tenant relation
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  // Audit
+  createdById String?
+  createdBy   User?   @relation("TerminalCreator", fields: [createdById], references: [id], onDelete: SetNull)
+
+  // Relations
+  sessions POSSession[]
+  sales    Sale[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@unique([code, tenantId])
+  @@index([locationId])
+  @@index([tenantId])
+  @@index([isActive])
+  @@index([deletedAt])
+  @@map("pos_terminals")
+}
+
+// Cash drawer session management (optional - for shift tracking)
+model POSSession {
+  id            String @id @default(uuid())
+  sessionNumber String @db.VarChar(50) // Auto-generated: "SES-2024-001"
+
+  // Opening/Closing balances (for cash accountability)
+  openingBalance  Decimal  @db.Decimal(15, 4)
+  closingBalance  Decimal? @db.Decimal(15, 4)
+  expectedBalance Decimal? @db.Decimal(15, 4) // Calculated from sales
+  variance        Decimal? @db.Decimal(15, 4) // Difference (shortage/overage)
+
+  status POSSessionStatus @default(OPEN)
+
+  // Timestamps
+  openedAt DateTime  @default(now())
+  closedAt DateTime?
+
+  // Cash counts (JSON for flexibility)
+  openingCount Json? // { "1000": 5, "500": 10, ... }
+  closingCount Json?
+
+  notes String?
+
+  // Terminal relation
+  terminalId String
+  terminal   POSTerminal @relation(fields: [terminalId], references: [id], onDelete: Cascade)
+
+  // User relations
+  openedById String
+  openedBy   User   @relation("SessionOpener", fields: [openedById], references: [id])
+
+  closedById String?
+  closedBy   User?   @relation("SessionCloser", fields: [closedById], references: [id])
+
+  // Tenant relation
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  // Sales in this session
+  sales Sale[]
+
+  @@unique([sessionNumber, tenantId])
+  @@index([terminalId])
+  @@index([status])
+  @@index([tenantId])
+  @@index([openedAt])
+  @@map("pos_sessions")
+}
+
+// Main Sale record
+model Sale {
+  id         String @id @default(uuid())
+  saleNumber String @db.VarChar(50) // Invoice/receipt number: "INV-2024-00001"
+
+  // Amounts (all in tenant's currency)
+  subtotal       Decimal @db.Decimal(15, 4) // Before discounts & tax
+  discountAmount Decimal @default(0) @db.Decimal(15, 4)
+  taxAmount      Decimal @default(0) @db.Decimal(15, 4)
+  totalAmount    Decimal @db.Decimal(15, 4) // Final amount
+  paidAmount     Decimal @default(0) @db.Decimal(15, 4)
+  changeAmount   Decimal @default(0) @db.Decimal(15, 4)
+
+  status SaleStatus @default(DRAFT)
+
+  // Optional customer (walk-in sales don't require customer)
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+
+  // Location where sale occurred
+  locationId String
+  location   Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  // POS Terminal (optional for BD market - many shops don't have dedicated hardware)
+  terminalId String?
+  terminal   POSTerminal? @relation(fields: [terminalId], references: [id])
+
+  // Session (optional for shops without shift tracking)
+  sessionId String?
+  session   POSSession? @relation(fields: [sessionId], references: [id])
+
+  // Cashier who processed
+  cashierId String
+  cashier   User   @relation("SaleCashier", fields: [cashierId], references: [id])
+
+  // Cart-level discount
+  discountType   DiscountType?
+  discountValue  Decimal?      @db.Decimal(15, 4)
+  discountReason String?       @db.VarChar(255)
+
+  // Metadata
+  notes    String?
+  metadata Json? // For extensibility
+
+  // Timestamps
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  completedAt DateTime?
+  voidedAt    DateTime?
+
+  // Void tracking
+  voidedById String?
+  voidedBy   User?   @relation("SaleVoider", fields: [voidedById], references: [id], onDelete: SetNull)
+  voidReason String?
+
+  // Tenant
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  // Relations
+  items    SaleItem[]
+  payments SalePayment[]
+  refunds  SaleRefund[]
+
+  // Invoice link (when created from fully-paid invoice)
+  sourceInvoice Invoice?
+
+  @@unique([saleNumber, tenantId])
+  @@index([customerId])
+  @@index([locationId])
+  @@index([terminalId])
+  @@index([sessionId])
+  @@index([cashierId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([tenantId])
+  @@map("sales")
+}
+
+// Line items in a sale
+model SaleItem {
+  id String @id @default(uuid())
+
+  quantity  Int
+  unitPrice Decimal @db.Decimal(15, 4) // Price at time of sale
+  unitCost  Decimal @db.Decimal(12, 4) // COGS (from valuation layer)
+
+  // Line-level discount
+  discountType   DiscountType?
+  discountValue  Decimal?      @db.Decimal(15, 4)
+  discountAmount Decimal       @default(0) @db.Decimal(15, 4)
+
+  taxRate   Decimal @default(0) @db.Decimal(5, 4)
+  taxAmount Decimal @default(0) @db.Decimal(15, 4)
+
+  lineTotal Decimal @db.Decimal(15, 4) // Final line amount
+
+  // Snapshot at sale time (for historical record)
+  productName String @db.VarChar(255)
+  productSku  String @db.VarChar(100)
+  attributes  Json? // { "Color": "Red", "Size": "M" }
+
+  notes String?
+
+  // Product relation
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
+  // Sale relation
+  saleId String
+  sale   Sale   @relation(fields: [saleId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([saleId])
+  @@index([productId])
+  @@map("sale_items")
+}
+
+// Payment records (supports split payments)
+model SalePayment {
+  id String @id @default(uuid())
+
+  amount Decimal       @db.Decimal(15, 4)
+  method PaymentMethod
+  status PaymentStatus @default(PENDING)
+
+  // For card/digital payments (manual entry from EDC machine or mobile app)
+  transactionRef  String? @db.VarChar(255) // Approval code from EDC / bKash TrxID
+  gatewayResponse Json? // For future online gateway integration
+
+  // For cash payments
+  receivedAmount Decimal? @db.Decimal(15, 4) // Amount given by customer
+  changeGiven    Decimal? @db.Decimal(15, 4)
+
+  // Metadata
+  notes String?
+
+  processedAt DateTime @default(now())
+
+  // Sale relation
+  saleId String
+  sale   Sale   @relation(fields: [saleId], references: [id], onDelete: Cascade)
+
+  // User who processed
+  processedById String
+  processedBy   User   @relation("PaymentProcessor", fields: [processedById], references: [id])
+
+  @@index([saleId])
+  @@index([method])
+  @@index([status])
+  @@map("sale_payments")
+}
+
+// Refunds (partial or full)
+model SaleRefund {
+  id           String @id @default(uuid())
+  refundNumber String @db.VarChar(50) // "REF-2024-00001"
+
+  amount Decimal       @db.Decimal(15, 4)
+  method PaymentMethod
+  status PaymentStatus @default(PENDING)
+
+  reason String @db.VarChar(500)
+
+  // Optionally link to specific items being refunded
+  items Json? // [{ saleItemId, quantity, amount }]
+
+  processedAt DateTime @default(now())
+
+  // Sale relation
+  saleId String
+  sale   Sale   @relation(fields: [saleId], references: [id])
+
+  // User who processed
+  processedById String
+  processedBy   User   @relation("RefundProcessor", fields: [processedById], references: [id])
+
+  // Tenant relation
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([refundNumber, tenantId])
+  @@index([saleId])
+  @@index([tenantId])
+  @@map("sale_refunds")
+}
+
+// Daily sales summary (denormalized for fast reporting)
+model DailySalesSummary {
+  id   String   @id @default(uuid())
+  date DateTime @db.Date
+
+  totalSales    Int     @default(0)
+  totalRevenue  Decimal @default(0) @db.Decimal(15, 4)
+  totalCOGS     Decimal @default(0) @db.Decimal(15, 4)
+  totalDiscount Decimal @default(0) @db.Decimal(15, 4)
+  totalTax      Decimal @default(0) @db.Decimal(15, 4)
+  totalRefunds  Decimal @default(0) @db.Decimal(15, 4)
+
+  // By payment method
+  cashTotal  Decimal @default(0) @db.Decimal(15, 4)
+  cardTotal  Decimal @default(0) @db.Decimal(15, 4)
+  bkashTotal Decimal @default(0) @db.Decimal(15, 4)
+  nagadTotal Decimal @default(0) @db.Decimal(15, 4)
+  otherTotal Decimal @default(0) @db.Decimal(15, 4)
+
+  // Location
+  locationId String
+  location   Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  // Tenant
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([date, locationId, tenantId])
+  @@index([date])
+  @@index([locationId])
+  @@index([tenantId])
+  @@map("daily_sales_summaries")
+}

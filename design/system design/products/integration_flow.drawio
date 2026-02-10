@@ -1,0 +1,172 @@
+<mxfile host="65bd71144e">
+    <diagram id="xw6i7oCTZnoeJ7yPO0JE" name="Page-1">
+        <mxGraphModel dx="3663" dy="-1180" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="220" value="" style="edgeStyle=none;html=1;" edge="1" parent="1" source="217" target="219">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="217" value="&lt;h3&gt;&lt;font size=&quot;3&quot;&gt;Dashboard&lt;/font&gt;&lt;/h3&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+                    <mxGeometry x="-1430" y="4510" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="228" value="" style="edgeStyle=none;html=1;entryX=0;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="219" target="229">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="-374.26882419645335" y="4109.368769106217" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="254" style="edgeStyle=none;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="219" target="256">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="-420" y="4500" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="277" style="edgeStyle=none;html=1;exitX=0.75;exitY=1;exitDx=0;exitDy=0;entryX=0.042;entryY=0.321;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="219" target="278">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="-430" y="4940" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="219" value="&lt;h4&gt;Product&lt;/h4&gt;" style="whiteSpace=wrap;html=1;rounded=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+                    <mxGeometry x="-1010" y="4510" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="232" style="edgeStyle=none;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" edge="1" parent="1" source="224">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="580.0000000000005" y="3980" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="234" style="edgeStyle=none;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="224" target="235">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="690.0000000000005" y="4130" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="224" value="Backend" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+                    <mxGeometry x="430" y="4110" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="231" style="edgeStyle=none;html=1;" edge="1" parent="1" source="229" target="224">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="229" value="add product" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="-400" y="4110" width="120" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="272" style="edgeStyle=none;html=1;exitX=1;exitY=0;exitDx=0;exitDy=0;entryX=0.417;entryY=1;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="233" target="273">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="670" y="3800" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="275" style="edgeStyle=none;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="233" target="276">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="770" y="3870" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="233" value="create product" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="540" y="3900" width="120" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="253" value="" style="edgeStyle=none;html=1;" edge="1" parent="1" source="235" target="252">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="235" value="create a stock batch" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="690" y="4100" width="120" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="252" value="create stock location table data which contain the information of product location of storing warehouses&amp;nbsp;" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="890" y="4090" width="200" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="261" style="edgeStyle=none;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="256" target="262">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="420" y="4540" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="256" value="stock movement" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="-400" y="4490" width="120" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="263" style="edgeStyle=none;html=1;" edge="1" parent="1" source="262">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="690" y="4410" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="265" style="edgeStyle=none;html=1;" edge="1" parent="1" source="262">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="760" y="4540" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="270" style="edgeStyle=none;html=1;exitX=1;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="1" source="262">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="730" y="4680" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="262" value="backend" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+                    <mxGeometry x="430" y="4510" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="264" value="create stock movement table data" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="690" y="4350" width="120" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="266" value="update previous stock location table data" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="760" y="4500" width="120" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="267" value="&lt;span style=&quot;font-size: 18px;&quot;&gt;Stock location table&lt;/span&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="900" y="4043" width="180" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="268" value="stock/batch table" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="695" y="4053" width="110" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="269" value="product table" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="555" y="3858" width="90" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="271" value="create/update new stock location table data" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="730" y="4650" width="120" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="273" value="create parent product" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="620" y="3710" width="120" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="276" value="create child(actual) product" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="760" y="3778" width="120" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="279" style="edgeStyle=none;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="278" target="280">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="420" y="4940" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="278" value="update product" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="-400" y="4900" width="120" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="281" style="edgeStyle=none;html=1;exitX=1;exitY=0;exitDx=0;exitDy=0;" edge="1" parent="1" source="280">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="740" y="4870" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="289" style="edgeStyle=none;html=1;exitX=1;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="280" target="290">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="730" y="5040" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="280" value="backend" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+                    <mxGeometry x="430" y="4910" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="284" style="edgeStyle=none;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="1" source="282">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="1030" y="4860" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="282" value="add stock" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="740" y="4820" width="120" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="288" style="edgeStyle=none;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="286" target="287">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="286" value="create a stock batch" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="1030" y="4820" width="120" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="287" value="create stock location table data&amp;nbsp;" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="1310" y="4815" width="120" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="292" value="" style="edgeStyle=none;html=1;" edge="1" parent="1" source="290" target="291">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="290" value="update product info" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="740" y="5000" width="120" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="291" value="update the product tables data" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="1030" y="5000" width="120" height="80" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

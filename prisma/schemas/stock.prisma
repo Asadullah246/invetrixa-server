@@ -1,0 +1,332 @@
+enum StockMovementType {
+  IN
+  OUT
+}
+
+enum StockReferenceType {
+  PURCHASE
+  SALE
+  TRANSFER
+  RETURN
+  ADJUSTMENT
+}
+
+enum StockMovementStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
+}
+
+enum TransferStatus {
+  DRAFT
+  IN_TRANSIT
+  COMPLETED
+  CANCELLED
+}
+
+enum ReservationStatus {
+  ACTIVE
+  RELEASED
+  FULFILLED
+  EXPIRED
+}
+
+enum BatchStatus {
+  ACTIVE
+  EXPIRED
+  QUARANTINE
+  RECALLED
+}
+
+model Batch {
+  id                String           @id @default(uuid())
+  batchNumber       String           @db.VarChar(100)
+  manufacturingDate DateTime?
+  expiryDate        DateTime?
+  receivedDate      DateTime         @default(now())
+  supplierName      String?          @db.VarChar(255)
+  supplierId        String?
+  supplier          Supplier?        @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  status            BatchStatus      @default(ACTIVE)
+  certificateUrl    String?
+  notes             String?
+  productId         String
+  product           Product          @relation(fields: [productId], references: [id], onDelete: Cascade)
+  tenantId          String
+  tenant            Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  valuationLayers   ValuationLayer[]
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  @@unique([batchNumber, productId, tenantId])
+  @@index([productId])
+  @@index([tenantId])
+  @@index([expiryDate])
+  @@index([status])
+  @@index([supplierId])
+  @@map("batches")
+}
+
+// ============== INVENTORY BALANCE (FAST READ TABLE) ==============
+// Materialized view pattern for current stock - updated on every stock change
+// Use this for availability checks, low stock alerts, and UI display
+
+model InventoryBalance {
+  id               String   @id @default(uuid())
+  onHandQuantity   Int      @default(0)
+  reservedQuantity Int      @default(0)
+  productId        String
+  product          Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  locationId       String
+  location         Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  tenantId         String
+  tenant           Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@unique([productId, locationId])
+  @@index([productId])
+  @@index([locationId])
+  @@index([tenantId])
+  @@index([onHandQuantity])
+  @@map("inventory_balances")
+}
+
+// ============== VALUATION LAYER (FIFO / LIFO / COGS) ==============
+// Each layer represents a batch of stock with a specific cost
+// FIFO: consume oldest layers first (order by createdAt ASC)
+// LIFO: consume newest layers first (order by createdAt DESC)
+// Average: calculate weighted average across all layers
+
+model ValuationLayer {
+  id               String                      @id @default(uuid())
+  unitCost         Decimal                     @db.Decimal(12, 4)
+  originalQty      Int
+  remainingQty     Int
+  productId        String
+  product          Product                     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  locationId       String
+  location         Location                    @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  tenantId         String
+  tenant           Tenant                      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  sourceMovementId String?
+  sourceMovement   StockMovement?              @relation("LayerSource", fields: [sourceMovementId], references: [id], onDelete: SetNull)
+  consumptions     ValuationLayerConsumption[]
+  createdAt        DateTime                    @default(now())
+  batch            Batch?                      @relation(fields: [batchId], references: [id])
+
+  batchId String?
+
+  @@index([productId, locationId, createdAt]) // For FIFO queries
+  @@index([productId, locationId, remainingQty]) // For available stock
+  @@index([tenantId])
+  @@map("valuation_layers")
+}
+
+// ============== VALUATION LAYER CONSUMPTION ==============
+// Track which layers were consumed by which movements (for COGS calculation)
+
+model ValuationLayerConsumption {
+  id String @id @default(uuid())
+
+  quantity Int // Quantity consumed from this layer
+  unitCost Decimal @db.Decimal(12, 4) // Cost at time of consumption
+
+  // Layer that was consumed
+  valuationLayerId String
+  valuationLayer   ValuationLayer @relation(fields: [valuationLayerId], references: [id], onDelete: Cascade)
+
+  // Movement that consumed this layer
+  stockMovementId String
+  stockMovement   StockMovement @relation(fields: [stockMovementId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([valuationLayerId])
+  @@index([stockMovementId])
+  @@map("valuation_layer_consumptions")
+}
+
+// ============== STOCK MOVEMENT (LEDGER – APPEND ONLY) ==============
+// Every stock change creates a row here - NEVER delete or update quantity
+// This is your audit trail and source of truth
+
+model StockMovement {
+  id String @id @default(uuid())
+
+  // Movement details
+  movementType StockMovementType // IN or OUT
+  quantity     Int // Always positive (direction determined by movementType)
+  unitCost     Decimal           @db.Decimal(12, 4) // Cost per unit at time of movement
+  totalCost    Decimal           @db.Decimal(14, 4) // quantity * unitCost (denormalized for convenience)
+
+  // Reference to source document (polymorphic)
+  referenceType StockReferenceType // PURCHASE, SALE, TRANSFER, RETURN, ADJUSTMENT
+  referenceId   String? // ID of the source document (order, PO, transfer, etc.)
+
+  // Status
+  status StockMovementStatus @default(COMPLETED)
+
+  // Metadata (for notes, reason codes, etc.)
+  note     String?
+  metadata Json? // Flexible field for additional data
+
+  // Product relation
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  // Location relation
+  locationId String
+  location   Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  // Tenant relation
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  // Audit: who created this movement
+  createdById String?
+  createdBy   User?   @relation("StockMovementCreator", fields: [createdById], references: [id], onDelete: SetNull)
+
+  // For transfer tracking: link to transfer record
+  transferId String?
+  transfer   StockTransfer? @relation(fields: [transferId], references: [id], onDelete: SetNull)
+
+  // Valuation layer created by this movement (for stock IN)
+  createdLayer ValuationLayer[] @relation("LayerSource")
+
+  // Layers consumed by this movement (for stock OUT)
+  consumedLayers ValuationLayerConsumption[]
+
+  createdAt DateTime @default(now())
+
+  // NO updatedAt - movements are immutable!
+
+  @@index([productId, locationId])
+  @@index([referenceType, referenceId])
+  @@index([transferId])
+  @@index([tenantId])
+  @@index([createdAt])
+  @@index([status])
+  @@index([movementType])
+  @@index([createdById])
+  @@map("stock_movements")
+}
+
+// ============== STOCK TRANSFER (MULTI-WAREHOUSE) ==============
+// Track transfers between warehouses with in-transit status
+
+model StockTransfer {
+  id String @id @default(uuid())
+
+  // Transfer reference number
+  transferNumber String @db.VarChar(50)
+
+  // Locations
+  fromLocationId String
+  fromLocation   Location @relation("TransferFrom", fields: [fromLocationId], references: [id], onDelete: Cascade)
+
+  toLocationId String
+  toLocation   Location @relation("TransferTo", fields: [toLocationId], references: [id], onDelete: Cascade)
+
+  // Status
+  status TransferStatus @default(DRAFT)
+
+  // Dates
+  shippedAt   DateTime? // When transfer left source
+  receivedAt  DateTime? // When transfer arrived at destination
+  cancelledAt DateTime?
+
+  // Metadata
+  note     String?
+  metadata Json?
+
+  // Tenant relation
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  // Audit
+  createdById String?
+  createdBy   User?   @relation("TransferCreator", fields: [createdById], references: [id], onDelete: SetNull)
+
+  // Transfer line items
+  items StockTransferItem[]
+
+  // Related stock movements (OUT from source, IN at destination)
+  movements StockMovement[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([transferNumber, tenantId])
+  @@index([fromLocationId])
+  @@index([toLocationId])
+  @@index([status])
+  @@index([tenantId])
+  @@map("stock_transfers")
+}
+
+// ============== STOCK TRANSFER ITEM ==============
+// Line items for each product in a transfer
+
+model StockTransferItem {
+  id String @id @default(uuid())
+
+  // Quantities
+  requestedQuantity Int // Quantity requested to transfer
+  shippedQuantity   Int @default(0) // Quantity actually shipped
+  receivedQuantity  Int @default(0) // Quantity received at destination
+
+  // Cost tracking for accurate valuation
+  shippedUnitCost Decimal? @db.Decimal(12, 4) // Cost at time of shipping (for cancel/receive)
+
+  // Shortage tracking
+  shortageReason String? // Reason for discrepancy (damage, lost, etc.)
+
+  // Note for additional details
+  note String?
+
+  // Product relation
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  // Transfer relation
+  transferId String
+  transfer   StockTransfer @relation(fields: [transferId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([transferId, productId])
+  @@index([transferId])
+  @@index([productId])
+  @@map("stock_transfer_items")
+}
+
+// ============== STOCK RESERVATION ==============
+// Prevent overselling by reserving stock for carts/orders
+
+model StockReservation {
+  id            String            @id @default(uuid())
+  quantity      Int
+  expiresAt     DateTime
+  status        ReservationStatus @default(ACTIVE)
+  referenceType String?           @db.VarChar(50)
+  referenceId   String?
+  productId     String
+  product       Product           @relation(fields: [productId], references: [id], onDelete: Cascade)
+  locationId    String
+  location      Location          @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  tenantId      String
+  tenant        Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  createdById   String?
+  createdBy     User?             @relation("ReservationCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  @@index([productId, locationId])
+  @@index([expiresAt])
+  @@index([status])
+  @@index([referenceType, referenceId])
+  @@index([tenantId])
+  @@map("stock_reservations")
+}

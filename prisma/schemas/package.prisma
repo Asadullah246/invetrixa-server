@@ -1,0 +1,60 @@
+enum PackageType {
+  FIXED
+  PAY_PER_USE
+}
+
+enum Period {
+  MONTHLY
+  YEARLY
+}
+
+model Package {
+  id            String           @id @default(uuid())
+  name          String
+  description   String?
+  type          PackageType
+  price         Float
+  period        Period
+  features      PackageFeature[]
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  subscriptions Subscription[]
+}
+
+model PackageFeature {
+  id          String     @id @default(uuid())
+  label       String
+  description String?
+  package     Package    @relation(fields: [packageId], references: [id])
+  packageId   String
+  actionKey   String
+  limit       Int?
+  price       Float?
+  moduleRefId String?
+  moduleRef   ModuleRef? @relation(fields: [moduleRefId], references: [id])
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model Subscription {
+  id            String    @id @default(uuid())
+  userId        String
+  packageId     String
+  startDate     DateTime  @default(now())
+  endDate       DateTime?
+  active        Boolean   @default(true)
+  billingPeriod String // "monthly"/"yearly"
+  // usages        Usage[]
+  user          User      @relation(fields: [userId], references: [id])
+  package       Package   @relation(fields: [packageId], references: [id])
+}
+
+// model Usage {
+//     id             String       @id @default(uuid())
+//     subscriptionId String
+//     actionId       String
+//     count          BigInt       @default(0)
+//     updatedAt      DateTime     @updatedAt
+//     subscription   Subscription @relation(fields: [subscriptionId], references: [id])
+//     action         Action       @relation(fields: [actionId], references: [id])
+// }

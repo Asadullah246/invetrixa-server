@@ -1,0 +1,36 @@
+model Address {
+  // identity and timestamp
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // properties
+  addressLine1 String
+  addressLine2 String?
+  city         String
+  state        String
+  postalCode   String
+  country      String
+
+  // geocoding
+  latitude     Float?
+  longitude    Float?
+  googleMapUrl String? @db.VarChar(500)
+
+  // foreign keys
+  tenantId String? @unique
+  userId   String? @unique
+
+  // relations
+  tenant Tenant? @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  locationId String?   @unique
+  location   Location? @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  @@index([city])
+  @@index([country])
+  @@index([userId])
+  @@index([tenantId])
+  @@map("addresses")
+}

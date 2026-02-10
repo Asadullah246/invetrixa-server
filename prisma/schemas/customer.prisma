@@ -1,0 +1,111 @@
+// ============== CUSTOMER ENUMS ==============
+
+enum CustomerType {
+  INDIVIDUAL // B2C - Individual consumer
+  BUSINESS // B2B - Business/Company
+}
+
+enum CustomerStatus {
+  ACTIVE
+  INACTIVE
+  BLOCKED
+}
+
+enum AddressType {
+  BILLING
+  SHIPPING
+  BOTH
+}
+
+// ============== CUSTOMER MODEL ==============
+
+model Customer {
+  id String @id @default(uuid())
+
+  // Customer Type
+  customerType CustomerType @default(INDIVIDUAL)
+
+  // Basic Info (for INDIVIDUAL)
+  firstName String  @db.VarChar(100)
+  lastName  String? @db.VarChar(100)
+
+  // Business Info (for BUSINESS)
+  companyName String? @db.VarChar(255)
+  taxId       String? @db.VarChar(50) // VAT/TIN number
+
+  // Contact Info
+  email          String? @db.VarChar(255)
+  phone          String  @db.VarChar(20)
+  alternatePhone String? @db.VarChar(20)
+
+  // Status
+  status CustomerStatus @default(ACTIVE)
+
+  // Tags & Notes
+  tags  String[]
+  notes String?
+
+  // Tenant relation
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  // Audit
+  createdById String?
+  createdBy   User?   @relation("CustomerCreator", fields: [createdById], references: [id], onDelete: SetNull)
+
+  // Timestamps
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  // Relations
+  addresses CustomerAddress[]
+  sales     Sale[]
+  invoices  Invoice[]
+
+  // Tenant-scoped unique constraints
+  @@unique([phone, tenantId])
+  @@unique([email, tenantId])
+  @@index([tenantId])
+  @@index([customerType])
+  @@index([companyName, tenantId])
+  @@index([status])
+  @@index([deletedAt])
+  @@map("customers")
+}
+
+// ============== CUSTOMER ADDRESS MODEL ==============
+
+model CustomerAddress {
+  id String @id @default(uuid())
+
+  // Address Type
+  addressType AddressType @default(BOTH)
+  label       String?     @db.VarChar(100) // "Home", "Office", "Warehouse"
+  isDefault   Boolean     @default(false)
+
+  // Address Fields
+  addressLine1 String? @db.VarChar(255)
+  addressLine2 String? @db.VarChar(255)
+  city         String? @db.VarChar(100)
+  state        String? @db.VarChar(100)
+  postalCode   String? @db.VarChar(20)
+  country      String? @db.VarChar(100)
+
+  // Geocoding (optional)
+  latitude  Float?
+  longitude Float?
+
+  // Customer relation
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([customerId])
+  @@index([addressType])
+  @@index([isDefault])
+  @@map("customer_addresses")
+}

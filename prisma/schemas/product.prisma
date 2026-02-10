@@ -1,0 +1,177 @@
+// ============== ENUMS ==============
+
+enum ProductStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+enum ProductType {
+  SIMPLE // Standalone product, no variants
+  VARIABLE // Parent product that has variants
+  VARIANT // Child variant of a parent
+}
+
+enum MarkupType {
+  PERCENT // sellingPrice = cost × (1 + markup/100)
+  FIXED_AMOUNT // sellingPrice = cost + markup
+  MANUAL // Use sellingPrice field directly
+}
+
+// ============== MODELS ==============
+
+model Product {
+  id               String         @id @default(uuid())
+  name             String         @db.VarChar(255)
+  slug             String?        @db.VarChar(255)
+  sku              String         @db.VarChar(100)
+  barcode          String?        @db.VarChar(100)
+  qrcode           String?        @db.VarChar(255)
+  shortDescription String?        @db.VarChar(500)
+  description      Json?
+  taxRate          Float          @default(0)
+  weight           Float?
+  dimensions       Json?
+  featureImage     String?
+  images           String[]
+  video            String?
+  status           ProductStatus  @default(DRAFT)
+  isFeatured       Boolean        @default(false)
+  tags             String[]
+  features         Json?
+  reorderLevel     Int            @default(0)
+  unitType         String?        @default("PIECE") @db.VarChar(50)
+  productType      ProductType    @default(SIMPLE)
+  pricingMethod    PricingMethod? // Optional - falls back to tenant default
+
+  // Selling Price / Markup fields
+  markupType      MarkupType? // How to interpret markupValue
+  markupValue     Decimal?    @db.Decimal(15, 4) // %, fixed amount, or absolute price
+  minSellingPrice Decimal?    @db.Decimal(15, 4) // Floor price
+  maxSellingPrice Decimal?    @db.Decimal(15, 4) // Ceiling price
+
+  // Self-referencing for variants
+  parentId String?
+  parent   Product?  @relation("ProductVariants", fields: [parentId], references: [id], onDelete: SetNull)
+  variants Product[] @relation("ProductVariants")
+
+  // Tenant relation
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  // Relations
+  categories      ProductCategoryProduct[]
+  attributeValues ProductAttributeValue[]
+
+  // Stock management relations
+  inventoryBalances  InventoryBalance[]
+  valuationLayers    ValuationLayer[]
+  stockMovements     StockMovement[]
+  stockReservations  StockReservation[]
+  stockTransferItems StockTransferItem[]
+  batches            Batch[]
+
+  // POS relation
+  saleItems    SaleItem[]
+  invoiceItems InvoiceItem[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([tenantId])
+  @@index([sku, tenantId]) // For application-layer uniqueness check
+  @@index([slug, tenantId]) // For application-layer uniqueness check
+  @@index([status])
+  @@index([name])
+  @@index([deletedAt])
+  @@map("products")
+}
+
+model ProductCategory {
+  id          String        @id @default(uuid())
+  name        String        @db.VarChar(255)
+  slug        String        @db.VarChar(255)
+  description String?
+  image       String?
+  status      ProductStatus @default(DRAFT)
+
+  // Self-referencing for hierarchy
+  parentId String?
+  parent   ProductCategory?  @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children ProductCategory[] @relation("CategoryHierarchy")
+
+  // Tenant relation
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  // Relations
+  products ProductCategoryProduct[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([tenantId])
+  @@index([slug, tenantId]) // For application-layer uniqueness check
+  @@index([status])
+  @@index([deletedAt])
+  @@map("product_categories")
+}
+
+// Junction table for Product <-> Category (many-to-many)
+model ProductCategoryProduct {
+  id         String @id @default(uuid())
+  productId  String
+  categoryId String
+
+  product  Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  category ProductCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, categoryId])
+  @@index([productId])
+  @@index([categoryId])
+  @@map("product_category_products")
+}
+
+// ============== PRODUCT ATTRIBUTE VALUES ==============
+// Simple key-value pairs for product attributes (Color, Size, etc.)
+// Parent products have all values, variants have single value per key
+
+model ProductAttributeValue {
+  id     String   @id @default(uuid())
+  key    String   @db.VarChar(100) // "Color", "Size", "Material"
+  values String[] // ["Red"] for variant, ["Red", "Blue", "Green"] for parent
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, key]) // One key per product
+  @@index([productId])
+  @@index([key])
+  @@map("product_attribute_values")
+}
+
+model Supplier {
+  id          String  @id @default(uuid())
+  name        String  @db.VarChar(255)
+  email       String? @db.VarChar(255)
+  phone       String? @db.VarChar(50)
+  address     String?
+  contactName String? @db.VarChar(255)
+  notes       String?
+
+  // Tenant relation
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  batches   Batch[]
+
+  @@index([tenantId])
+  @@index([name, tenantId]) // For application-layer uniqueness check
+  @@index([deletedAt])
+  @@map("suppliers")
+}

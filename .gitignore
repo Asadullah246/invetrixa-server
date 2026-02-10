@@ -36,12 +36,12 @@ lerna-debug.log*
 !.vscode/extensions.json
 
 # dotenv environment variable files
-# Strict single-file approach:
-# - .env.development and .env.test are committed (safe dev defaults)
-# - .env.production and .env.local are gitignored (contain secrets)
-.env.production
 .env.local
 .env.*.local
+.env
+.env.test
+.env.development
+.env.production
 
 # temp directory
 .temp

@@ -58,7 +58,7 @@ export class MfaService {
       step: 30,
       window: 1,
     };
-    this.issuer = configService.get<string>('APP_NAME') ?? 'PXLHUT';
+    this.issuer = configService.get<string>('APP_NAME') ?? 'INVETRIXA';
   }
 
   async initiateTotpSetup(

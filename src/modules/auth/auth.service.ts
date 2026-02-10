@@ -330,8 +330,8 @@ export class AuthService {
     if (dto.weeklyReportEmails !== undefined) {
       preferencesData.weeklyReportEmails = dto.weeklyReportEmails;
     }
-    if (dto.pxlhutEmails !== undefined) {
-      preferencesData.pxlhutEmails = dto.pxlhutEmails;
+    if (dto.invetrixaEmails !== undefined) {
+      preferencesData.invetrixaEmails = dto.invetrixaEmails;
     }
     if (dto.settings !== undefined) {
       preferencesData.settings = dto.settings;

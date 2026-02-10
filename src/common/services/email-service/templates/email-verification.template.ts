@@ -35,13 +35,13 @@ export function getEmailVerificationTemplate(
         <div style="margin-top: 30px; padding: 16px; background-color: #FEF3C7; border-radius: 8px; border-left: 4px solid #F59E0B;">
           <p style="color: #92400E; font-size: 14px; margin: 0;">
             <strong>⚠️ This link will expire in ${expirationHours} hours.</strong><br/>
-            If you didn't create an account with PxlHut, please ignore this email.
+            If you didn't create an account with Invetrixa, please ignore this email.
           </p>
         </div>
       </div>
       <div style="text-align: center; padding: 20px; background-color: #f8f9fa; border-radius: 8px; margin-top: 20px;">
         <p style="color: #888888; font-size: 12px; margin: 0;">
-          © ${year} PxlHut. All rights reserved.
+          © ${year} Invetrixa. All rights reserved.
         </p>
       </div>
     </div>

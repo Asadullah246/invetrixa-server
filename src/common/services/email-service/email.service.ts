@@ -24,7 +24,7 @@ export class EmailService {
   async sendWelcomeEmail(userEmail: string, userName: string) {
     const jobData: SendEmailJobData = {
       to: userEmail,
-      subject: 'Welcome to PxlHut!',
+      subject: 'Welcome to Invetrixa!',
       body: getWelcomeEmailTemplate({ userName }),
       timestamp: new Date().toISOString(),
     };
@@ -50,7 +50,7 @@ export class EmailService {
 
     const jobData: SendEmailJobData = {
       to: userEmail,
-      subject: 'Verify Your Email Address - PxlHut',
+      subject: 'Verify Your Email Address - Invetrixa',
       body: getEmailVerificationTemplate({
         userName,
         verificationUrl,
@@ -80,7 +80,7 @@ export class EmailService {
 
     const jobData: SendEmailJobData = {
       to: userEmail,
-      subject: 'Reset Your Password - PxlHut',
+      subject: 'Reset Your Password - Invetrixa',
       body: getPasswordResetTemplate({
         userName,
         resetUrl,
@@ -132,7 +132,7 @@ export class EmailService {
 
     const jobData: SendEmailJobData = {
       to: inviteeEmail,
-      subject: `You're invited to join ${tenantName} on PxlHut!`,
+      subject: `You're invited to join ${tenantName} on Invetrixa!`,
       body: getTenantInvitationEmailTemplate({
         inviteeEmail,
         tenantName,
@@ -159,7 +159,7 @@ export class EmailService {
   ) {
     const jobData: SendEmailJobData = {
       to: userEmail,
-      subject: `Your membership with ${tenantName} has been terminated - PxlHut`,
+      subject: `Your membership with ${tenantName} has been terminated - Invetrixa`,
       body: getMemberRemovalEmailTemplate({
         userName,
         tenantName,

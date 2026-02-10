@@ -1,6 +1,6 @@
 # 🧪 Testing Guide - AMSI CRM Server
 
-> A comprehensive guide for testing the pxlhut-server application.
+> A comprehensive guide for testing the invetrixa-server application.
 > Created: 2026-01-28
 
 ---
@@ -312,16 +312,16 @@ describe('Category API Contract', () => {
 
 ```bash
 # 1. Create test database (in docker-compose or manually)
-docker exec -it pxlhut-postgres psql -U postgres -c "CREATE DATABASE pxlhut_test;"
+docker exec -it invetrixa-postgres psql -U postgres -c "CREATE DATABASE invetrixa_test;"
 
 # 2. Create .env.test file
 cp .env.development .env.test
 
 # 3. Update DATABASE_URL in .env.test
-DATABASE_URL="postgresql://postgres:password@localhost:5432/pxlhut_test"
+DATABASE_URL="postgresql://postgres:password@localhost:5432/invetrixa_test"
 
 # 4. Run migrations on test database
-DATABASE_URL="postgresql://postgres:password@localhost:5432/pxlhut_test" pnpm exec prisma migrate deploy
+DATABASE_URL="postgresql://postgres:password@localhost:5432/invetrixa_test" pnpm exec prisma migrate deploy
 ```
 
 ### Step 2: Write Your First Unit Test
@@ -350,7 +350,7 @@ mkdir -p test/integration
 touch test/integration/category.integration.spec.ts
 
 # 3. Run with test database
-DATABASE_URL="postgresql://postgres:password@localhost:5432/pxlhut_test" pnpm test:e2e
+DATABASE_URL="postgresql://postgres:password@localhost:5432/invetrixa_test" pnpm test:e2e
 ```
 
 ### Step 4: Write E2E Tests
@@ -435,7 +435,7 @@ pnpm test --updateSnapshot
 ## 📁 Recommended Folder Structure
 
 ```
-pxlhut-server/
+invetrixa-server/
 ├── src/
 │   ├── modules/
 │   │   └── category/

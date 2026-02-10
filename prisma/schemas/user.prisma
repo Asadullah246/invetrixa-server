@@ -268,7 +268,7 @@ model UserPreferences {
   smsNotifications   Boolean @default(false)
   pushNotifications  Boolean @default(true)
   weeklyReportEmails Boolean @default(true)
-  pxlhutEmails       Boolean @default(true)
+  invetrixaEmails       Boolean @default(true)
 
   // Relations
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)

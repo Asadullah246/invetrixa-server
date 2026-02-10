@@ -200,8 +200,8 @@ export const configureSwagger = ({
   }
 
   const config = new DocumentBuilder()
-    .setTitle('Pxlhut Saas application API')
-    .setDescription('API documentation for Pxlhut Saas application')
+    .setTitle('Invetrixa Saas application API')
+    .setDescription('API documentation for Invetrixa Saas application')
     .setVersion('1.0')
     .addServer(`http://localhost:${port}/api`, 'Development server')
     .addCookieAuth('connect.sid', {

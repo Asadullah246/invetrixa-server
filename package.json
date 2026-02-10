@@ -1,8 +1,8 @@
 {
-  "name": "pxlhut-server",
+  "name": "invetrixa-server",
   "version": "0.0.1",
   "description": "",
-  "author": "",
+  "author": "asadullah",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
@@ -30,7 +30,7 @@
     "seed:demo": "npx tsx prisma/seed/demo/index.ts",
     "prisma:studio": "pnpm exec prisma studio",
     "prisma:validate": "pnpm exec prisma validate",
-    "prisma:migrate:docker": "DATABASE_URL=\"postgresql://postgres:password@localhost:${DB_PORT:-5432}/pxlhut\" pnpm exec prisma migrate dev",
+    "prisma:migrate:docker": "DATABASE_URL=\"postgresql://postgres:password@localhost:${DB_PORT:-5432}/invetrixa\" pnpm exec prisma migrate dev",
     "type-check": "tsc --noEmit",
     "docker:build": "docker compose -f docker-compose.dev.yml build",
     "docker:up": "docker compose -f docker-compose.dev.yml up -d",
@@ -55,7 +55,7 @@
     "docker:studio": "docker compose -f docker-compose.dev.yml exec -d app pnpm exec prisma studio --browser none --port 5555",
     "docker:generate": "docker compose -f docker-compose.dev.yml exec app pnpm exec prisma generate",
     "docker:migrate": "docker compose -f docker-compose.dev.yml exec app pnpm exec prisma migrate dev",
-    "docker:build:prod": "docker build -t pxlhut-server:latest -f Dockerfile .",
+    "docker:build:prod": "docker build -t invetrixa-server:latest -f Dockerfile .",
     "docker:test:prod": "docker compose -f docker-compose.test-prod.yml up --build",
     "docker:test:prod:down": "docker compose -f docker-compose.test-prod.yml down -v",
     "health": "curl -f http://localhost:8080/health || echo 'Health check failed'",

@@ -1,6 +1,6 @@
 # DevOps Documentation
 
-This document explains the DevOps infrastructure for the pxlhut-server application.
+This document explains the DevOps infrastructure for the invetrixa-server application.
 
 ---
 
@@ -63,8 +63,8 @@ pnpm docker:logs        # View app logs
 pnpm docker:restart     # Restart app container
 
 # Production build
-docker build -t pxlhut-server:latest .
-docker run -p 8080:8080 --env-file .env pxlhut-server:latest
+docker build -t invetrixa-server:latest .
+docker run -p 8080:8080 --env-file .env invetrixa-server:latest
 
 # Staging
 docker compose -f docker-compose.staging.yml up -d
@@ -351,7 +351,7 @@ HUSKY=0 git commit -m "feat: emergency fix"
 
 ```bash
 # On server
-cd /opt/pxlhut-server
+cd /opt/invetrixa-server
 docker compose -f docker-compose.prod.yml pull
 docker compose -f docker-compose.prod.yml up -d
 docker image prune -f
@@ -363,7 +363,7 @@ Migrations are NOT automatically run. After deployment:
 
 ```bash
 # Option 1: Run in container
-docker exec pxlhut-server pnpm exec prisma migrate deploy
+docker exec invetrixa-server pnpm exec prisma migrate deploy
 
 # Option 2: Add to deployment script
 docker compose -f docker-compose.prod.yml exec app \
@@ -441,7 +441,7 @@ Use conventional format: `git commit -m "feat: your message"`
 
 **Container keeps restarting:**
 
-1. Check logs: `docker logs pxlhut-server`
+1. Check logs: `docker logs invetrixa-server`
 2. Verify environment variables are set
 3. Ensure DATABASE_URL and REDIS_URL are accessible
 

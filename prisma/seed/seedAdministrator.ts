@@ -9,8 +9,8 @@ import { hashPassword } from './utils/helpers';
 import { upsertDefaultRoles } from '@/modules/tenants/utils/role-initializer.utils';
 import { SUPER_ADMIN_ROLE } from '@/common/constants/system-roles.constants';
 
-const ADMIN_EMAIL = 'admin@pxlhut.com';
-const ADMIN_TENANT_NAME = 'Pxlhut';
+const ADMIN_EMAIL = 'admin@invetrixa.com';
+const ADMIN_TENANT_NAME = 'Invetrixa';
 
 export async function seedAdministrator(prisma: PrismaClient) {
   console.log('🔄 Syncing administrator setup...');
@@ -58,11 +58,11 @@ export async function seedAdministrator(prisma: PrismaClient) {
         name: ADMIN_TENANT_NAME,
         companyType: CompanyType.PRIVATE_LIMITED,
         industry: Industry.TECHNOLOGY,
-        registrationNumber: 'PXLHUT-ADMIN-001',
-        businessEmail: 'info@pxlhut.com',
+        registrationNumber: 'INVETRIXA-ADMIN-001',
+        businessEmail: 'info@invetrixa.com',
         businessPhone: '+1234567890',
-        website: 'https://pxlhut.com',
-        description: 'Pxlhut Administrator Tenant',
+        website: 'https://invetrixa.com',
+        description: 'Invetrixa Administrator Tenant',
         establishedYear: new Date().getFullYear().toString(),
         status: TenantStatus.ACTIVE,
         isAdministrator: true,
@@ -73,9 +73,9 @@ export async function seedAdministrator(prisma: PrismaClient) {
       update: {
         companyType: CompanyType.PRIVATE_LIMITED,
         industry: Industry.TECHNOLOGY,
-        businessEmail: 'info@pxlhut.com',
+        businessEmail: 'info@invetrixa.com',
         businessPhone: '+1234567890',
-        website: 'https://pxlhut.com',
+        website: 'https://invetrixa.com',
         status: TenantStatus.ACTIVE,
       },
     });

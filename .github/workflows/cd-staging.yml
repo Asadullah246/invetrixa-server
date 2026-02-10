@@ -82,7 +82,7 @@ jobs:
       #   run: npm install -g @railway/cli
 
       # - name: Deploy to Railway
-      #   run: railway up --service pxlhut-server-staging
+      #   run: railway up --service invetrixa-server-staging
       #   env:
       #     RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
@@ -105,7 +105,7 @@ jobs:
       #     username: ${{ secrets.STAGING_USER }}
       #     key: ${{ secrets.STAGING_SSH_KEY }}
       #     script: |
-      #       cd /opt/pxlhut-server
+      #       cd /opt/invetrixa-server
       #       docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:develop
       #       docker compose -f docker-compose.staging.yml up -d
       #       docker image prune -f

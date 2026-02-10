@@ -78,7 +78,7 @@ jobs:
         env:
           POSTGRES_USER: test
           POSTGRES_PASSWORD: test
-          POSTGRES_DB: pxlhut_test
+          POSTGRES_DB: invetrixa_test
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -118,17 +118,17 @@ jobs:
       - name: Generate Prisma Client
         run: pnpm exec prisma generate
         env:
-          DATABASE_URL: 'postgresql://test:test@localhost:5432/pxlhut_test'
+          DATABASE_URL: 'postgresql://test:test@localhost:5432/invetrixa_test'
 
       - name: Run database migrations
         run: pnpm exec prisma db push
         env:
-          DATABASE_URL: 'postgresql://test:test@localhost:5432/pxlhut_test'
+          DATABASE_URL: 'postgresql://test:test@localhost:5432/invetrixa_test'
 
       - name: Run E2E tests
         run: pnpm run test:e2e
         env:
-          DATABASE_URL: 'postgresql://test:test@localhost:5432/pxlhut_test'
+          DATABASE_URL: 'postgresql://test:test@localhost:5432/invetrixa_test'
           REDIS_URL: 'redis://localhost:6379'
           NODE_ENV: 'test'
           SESSION_SECRET: 'test-session-secret-32-chars-long!!'
@@ -159,6 +159,6 @@ jobs:
           context: .
           file: ./Dockerfile
           push: false
-          tags: pxlhut-server:${{ github.sha }}
+          tags: invetrixa-server:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max

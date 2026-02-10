@@ -47,7 +47,7 @@ export function getPasswordResetTemplate(data: PasswordResetData): string {
       </div>
       <div style="text-align: center; padding: 20px; background-color: #f8f9fa; border-radius: 8px; margin-top: 20px;">
         <p style="color: #888888; font-size: 12px; margin: 0;">
-          © ${year} PxlHut. All rights reserved.
+          © ${year} Invetrixa. All rights reserved.
         </p>
       </div>
     </div>

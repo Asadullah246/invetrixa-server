@@ -75,11 +75,11 @@ export class UserPreferencesEntity {
   weeklyReportEmails: boolean;
 
   @ApiProperty({
-    description: 'Whether pxlhut emails are enabled',
+    description: 'Whether invetrixa emails are enabled',
     example: true,
     default: true,
   })
-  pxlhutEmails: boolean;
+  invetrixaEmails: boolean;
 
   @ApiProperty({
     description: 'Timestamp when the preferences were created',

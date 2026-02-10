@@ -11,7 +11,7 @@ export class TotpSetupResponseDto {
     description:
       'otpauth URI that can be encoded into a QR code for authenticator apps.',
     example:
-      'otpauth://totp/PXLHUT%20SaaS:jane.doe%40example.com?secret=JBSWY3DPEHPK3PXP&issuer=PXLHUT%20SaaS',
+      'otpauth://totp/INVETRIXA%20SaaS:jane.doe%40example.com?secret=JBSWY3DPEHPK3PXP&issuer=INVETRIXA%20SaaS',
   })
   readonly otpauthUrl: string;
 }

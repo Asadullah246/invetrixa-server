@@ -1,4 +1,4 @@
-# Contributing to pxlhut-server
+# Contributing to invetrixa-server
 
 Thank you for your interest in contributing! This guide will help you get started.
 
@@ -17,7 +17,7 @@ Thank you for your interest in contributing! This guide will help you get starte
 
    ```bash
    git clone <repository-url>
-   cd pxlhut-server
+   cd invetrixa-server
    ```
 
 2. Install dependencies:

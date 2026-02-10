@@ -89,7 +89,7 @@ jobs:
       #   run: npm install -g @railway/cli
 
       # - name: Deploy to Railway
-      #   run: railway up --service pxlhut-server
+      #   run: railway up --service invetrixa-server
       #   env:
       #     RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
@@ -111,7 +111,7 @@ jobs:
       #     key: ${{ secrets.PRODUCTION_SSH_KEY }}
       #     port: ${{ secrets.PRODUCTION_PORT }}
       #     script: |
-      #       cd /opt/pxlhut-server
+      #       cd /opt/invetrixa-server
       #       # Login to GHCR to ensure we can pull
       #       echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 

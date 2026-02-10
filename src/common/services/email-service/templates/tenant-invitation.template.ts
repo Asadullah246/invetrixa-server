@@ -45,7 +45,7 @@ export function getTenantInvitationEmailTemplate(
       <div style="padding: 30px 20px;">
         <p style="color: #555555; font-size: 16px; line-height: 1.6;">Hello <strong>${inviteeEmail}</strong>,</p>
         <p style="color: #555555; font-size: 16px; line-height: 1.6;">
-          <strong>${inviterName}</strong> has invited you to join <strong>${tenantName}</strong> on PxlHut.
+          <strong>${inviterName}</strong> has invited you to join <strong>${tenantName}</strong> on Invetrixa.
         </p>
         ${messageSection}
         <p style="color: #555555; font-size: 16px; line-height: 1.6;">
@@ -74,7 +74,7 @@ export function getTenantInvitationEmailTemplate(
       </div>
       <div style="text-align: center; padding: 20px; background-color: #f8f9fa; border-radius: 8px; margin-top: 20px;">
         <p style="color: #888888; font-size: 12px; margin: 0;">
-          © ${year} PxlHut. All rights reserved.
+          © ${year} Invetrixa. All rights reserved.
         </p>
       </div>
     </div>

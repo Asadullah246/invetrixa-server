@@ -9,7 +9,7 @@
 // DEMO TENANT
 // =============================================================================
 export const DEMO_TENANT_ID = '00000000-0000-0000-0000-000000000001';
-export const DEMO_TENANT_NAME = 'Pxlhut Demo Store';
+export const DEMO_TENANT_NAME = 'Invetrixa Demo Store';
 
 // =============================================================================
 // DEMO USERS

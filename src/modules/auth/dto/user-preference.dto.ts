@@ -42,8 +42,8 @@ export class UserPreferenceDto {
   @BooleanField('Weekly Report Emails', { required: false, example: true })
   weeklyReportEmails?: boolean;
 
-  @BooleanField('Pxlhut Emails', { required: false, example: true })
-  pxlhutEmails?: boolean;
+  @BooleanField('Invetrixa Emails', { required: false, example: true })
+  invetrixaEmails?: boolean;
 
   @ApiPropertyOptional({
     example: { customKey: 'customValue' },

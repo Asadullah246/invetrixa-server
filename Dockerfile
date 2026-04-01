@@ -51,7 +51,9 @@ RUN DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy" \
 COPY . .
 
 # Build the application
-RUN pnpm run build
+RUN pnpm run build && \
+    find dist/generated/prisma -type f -name "*.js" -exec sed -i 's/\.ts"/\.js"/g' {} + && \
+    find dist/generated/prisma -type f -name "*.js" -exec sed -i "s/\.ts'/\.js'/g" {} +
 
 # Remove development dependencies
 RUN pnpm prune --prod --ignore-scripts

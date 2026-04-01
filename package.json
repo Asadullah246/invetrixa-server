@@ -27,7 +27,7 @@
     "prisma:migrate": "pnpm exec prisma migrate dev",
     "prisma:reset": "pnpm exec prisma migrate reset",
     "prisma:seed": "pnpm exec prisma db seed",
-    "seed:demo": "npx tsx prisma/seed/demo/index.ts",
+    "seed:demo": "npx tsx -r dotenv/config prisma/seed/demo/index.ts",
     "prisma:studio": "pnpm exec prisma studio",
     "prisma:validate": "pnpm exec prisma validate",
     "prisma:migrate:docker": "DATABASE_URL=\"postgresql://postgres:password@localhost:${DB_PORT:-5432}/invetrixa\" pnpm exec prisma migrate dev",
